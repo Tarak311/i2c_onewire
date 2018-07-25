@@ -21,7 +21,7 @@ Chip_GPIO_WriteDirBit(LPC_GPIO, gpio_port, gpio_pin, dir);
 this->gpio_pin_set(this);
 
 }
-gpio_pin_port::gpio_pin_port()
+gpio_pin_port::~gpio_pin_port()
 {
 
 }

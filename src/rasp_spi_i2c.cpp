@@ -190,7 +190,8 @@ static void onewire_data(void *pvParameters)
 
 	one_wire_dev_init(xf);
 
-	write_scratchblock(xf);
+//	write_scratchblock(xf);
+
 	while (1)
 	{
 		exec_scratch(xf);
@@ -209,7 +210,7 @@ static void onewire_data(void *pvParameters)
 				}
 		}*/
 
-		vTaskDelay(configTICK_RATE_HZ/2);
+		vTaskDelay(configTICK_RATE_HZ/4);
 	}
 }
 static void i2c_data(void *pvParameters)

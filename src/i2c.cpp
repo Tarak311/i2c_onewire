@@ -202,10 +202,10 @@ void read_data(I2C_XFER_T& xf)
 void one_wire_read(I2C_XFER_T& xf)
 {
 	xf.slaveAddr=DSADD;
-	/*xf.rxBuff=one_wire_reset_rx;
+	xf.rxBuff=one_wire_reset_rx;
 	xf.rxSz=sizeof(one_wire_reset_rx);
-	Chip_I2C_MasterCmdRead_cpp( I2C0, xf.slaveAddr, ONEWIRE_READ_BYTE,  &(xf.rxBuff[1]), 1);*/
-	send_data(xf,ONEWIRE_READ_BYTE);
+	Chip_I2C_MasterCmdRead_cpp( I2C0, xf.slaveAddr, ONEWIRE_READ_BYTE,  &(xf.rxBuff[1]), 1);
+	//send_data(xf,ONEWIRE_READ_BYTE);
 }
 
 void write_scratch(I2C_XFER_T& xf)
@@ -256,11 +256,11 @@ void exec_scratch(I2C_XFER_T& xf)
 	start_cov(xf);
 	read_data(xf);
 	uint8_t i=0xFF;
-	while(!(i==0x00))
+/*while(!(i==0x00))
 	{
 		one_wire_read(xf);
 		Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&i, 1);
-	}
+	}*/
 }
 
 void write_scratchblock(I2C_XFER_T& xf)
@@ -272,18 +272,29 @@ void write_scratchblock(I2C_XFER_T& xf)
 }
 void exec_temp(I2C_XFER_T& xf,int& r)
 {
-	int i;
+	volatile int i;bool output=true;xSemaphoreHandle   mu=0;
+	gpio_pin_port pinx(LPC_GPIO ,2,12,output,&mu);
 	uint8_t n,u[9];
 	one_wire_reset(xf);
 	xf.slaveAddr=DSADD;
 	select_one_wire(xf);
 	read_scratch(xf);
+	//one_wire_read(xf);
+	//read_data(xf);
 	for (i=0;i<9;i++)
 	{
 		one_wire_read(xf);
+		read_data(xf);
 		Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&n, 1);
 		slave_data_tx[i]=n;
+
 	}
+	uint16_t slave_data16=slave_data_tx[2]<<8;
+	slave_data16=slave_data16|slave_data_tx[1];
+if (slave_data16>0x01C8){
+	pinx=true;
+	int i;
+}
 }
 
 bool checkrx(void)
