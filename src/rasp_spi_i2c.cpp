@@ -240,18 +240,18 @@ void setup()
 	xTaskCreate(blink2, (signed char *) "blink2",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 			(xTaskHandle *) NULL);
-	/*	xTaskCreate(bottonreadandrelay, (signed char *) "bottonreadandrelay",
+		xTaskCreate(bottonreadandrelay, (signed char *) "bottonreadandrelay",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-			(xTaskHandle *) NULL);*/
+			(xTaskHandle *) NULL);
 	xTaskCreate(onewire_data,(signed char *) "TX/RX function",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 			(xTaskHandle *) NULL);
 	/*xTaskCreate(i2c_data, (signed char *) "TX/RX function",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 			(xTaskHandle *) NULL);*/
-	/*xTaskCreate(blink, (signed char *) "blink",
+	xTaskCreate(blink, (signed char *) "blink",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-			(xTaskHandle *) NULL);*/
+			(xTaskHandle *) NULL);
 	/* UART output thread, simply counts seconds */
 	/*xTaskCreate(vUARTTask, (signed char *) "vTaskUart",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
