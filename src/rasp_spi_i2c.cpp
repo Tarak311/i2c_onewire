@@ -144,11 +144,11 @@ static void blink2(void *pvParameters)
 		if (xSemaphoreTake(mu,1000))
 		{
 			/* blinks led in cycle*/
-			if (checkrx()){
+			if (!checkrx()){
 				if (ledg && ledb){ledg=false;ledb=true;ledr=true;}else{if(ledr && ledb){ledb=false;ledr=true;ledg=true;}else{ledr=false;ledg=true;ledb=true;}}}
 			xSemaphoreGive(mu);
 		}
-		vTaskDelay(configTICK_RATE_HZ / 2);
+		vTaskDelay(10*configTICK_RATE_HZ);
 	}
 }
 /* LED2 toggle thread */
@@ -191,26 +191,13 @@ static void onewire_data(void *pvParameters)
 	one_wire_dev_init(xf);
 
 //	write_scratchblock(xf);
-
+	gpio_pin_port pinx(LPC_GPIO ,2,12,output,&mu);
+	pinx=false;
 	while (1)
 	{
 		exec_scratch(xf);
-		exec_temp(xf,i);
-		/*one_wire_reset(xf);
-		select_one_wire(xf);
-		start_cov(xf);
-		read_scratch(xf);
-		for(i=0;i<9;i++)
-		{
-			one_wire_read(xf);
-			exec_temp(xf,i);
-			for(j=0;j<2;j++)
-				{
-				 	 xfer.rxBuff[i]=xf.rxBuff[j];
-				}
-		}*/
-
-		vTaskDelay(configTICK_RATE_HZ/4);
+		pinx=exec_temp(xf,i);
+		vTaskDelay(configTICK_RATE_HZ/2);
 	}
 }
 static void i2c_data(void *pvParameters)

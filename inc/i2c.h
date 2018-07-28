@@ -101,7 +101,7 @@ void start_cov(I2C_XFER_T& xf);//run this in loop internal and first
 void read_scratch(I2C_XFER_T& xf);
 void read_data(I2C_XFER_T& xf);
 void read_temp(I2C_XFER_T& xf);
-void exec_temp(I2C_XFER_T& xf,int& r); // use this third
+bool exec_temp(I2C_XFER_T& xf,int& r); // use this third
 void one_wire_read(I2C_XFER_T& xf);
 void exec_scratch(I2C_XFER_T& xf);//run this second probably
 bool checkrx(void);

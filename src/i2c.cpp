@@ -270,13 +270,14 @@ void write_scratchblock(I2C_XFER_T& xf)
 	select_one_wire(xf);
 	write_scratch(xf);
 }
-void exec_temp(I2C_XFER_T& xf,int& r)
+bool exec_temp(I2C_XFER_T& xf,int& r)
 {
 	volatile int i;bool output=true;xSemaphoreHandle   mu=0;
-	gpio_pin_port pinx(LPC_GPIO ,2,12,output,&mu);
+	bool pinx;
 	uint8_t n,u[9];
 	one_wire_reset(xf);
 	xf.slaveAddr=DSADD;
+	pinx=false;
 	select_one_wire(xf);
 	read_scratch(xf);
 	//one_wire_read(xf);
@@ -289,15 +290,16 @@ void exec_temp(I2C_XFER_T& xf,int& r)
 		slave_data_tx[i]=n;
 
 	}
-	uint16_t slave_data16=slave_data_tx[2]<<8;
-	slave_data16=slave_data16|slave_data_tx[1];
-if (slave_data16>0x01C8){
+	uint16_t slave_data16=slave_data_tx[1]<<8;
+	slave_data16=slave_data16|slave_data_tx[0];
+if (slave_data_tx[0]>0xD8){
 	pinx=true;
 	int i;
 }
+return pinx;
 }
 
 bool checkrx(void)
 {
-	return !((slave_data_rx[1]==0x55)|(slave_data_rx[1]==0x55)|(slave_data_rx[1]==0x55)|(slave_data_rx[2]==0x55)|(slave_data_rx[3]==0x55)|(slave_data_rx[4]==0x55)|(slave_data_rx[5]==0x55)|(slave_data_rx[6]==0x55)|(slave_data_rx[7]==0x55)|(slave_data_rx[8]==0x55));
+	return ((slave_data_rx[1]==0x55)|(slave_data_rx[9]==0x55)|(slave_data_rx[10]==0x55)|(slave_data_rx[11]==0x55)|(slave_data_rx[12]==0x55)|(slave_data_rx[4]==0x55)|(slave_data_rx[13]==0x55)|(slave_data_rx[6]==0x55)|(slave_data_rx[7]==0x55)|(slave_data_rx[8]==0x55));
 }
