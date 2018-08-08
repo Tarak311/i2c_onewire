@@ -38,7 +38,7 @@
 #define START_CONVESION 0x44
 #define WRITE_SCRATCHPAD 0x4E
 #define READ_SCRATCH_PAD 0XBE
-#define DSADD 0x1a;
+#define DSADD 0x18;
 /*======================================================================================================================*/
 
 /*-----------------------------------------VARIABLE DECLARATIONS------------------------------------------------------*/
@@ -69,8 +69,8 @@ static I2C_XFER_T slave_xfr;
 //====================ALL THIS MAKES OUR PROGRAM WORKS==================================================================//
 
 /* Data area for slave operations */
-static uint8_t slave_data_tx[]={0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09}; // THIS IS RX OF MASTER SO ADXL/DS2=>MASTER=>RX=>TX OF SLAVE=>HOST
-static uint8_t slave_data_rx[8];
+static uint8_t slave_data_tx[]={0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; // THIS IS RX OF MASTER SO ADXL/DS2=>MASTER=>RX=>TX OF SLAVE=>HOST
+static uint8_t slave_data_rx[]={0x01,0xF0,0x00,0x00,0xB0,0xA0,0x00,0xB0,0xA0};
 static uint8_t slave_data_tx1[]={0x32,0x45,0x22,0x41};
 static uint8_t tx_buff1[]={0x2d,0x08};// CONTAINS SETUP DATA
 
@@ -92,7 +92,7 @@ void i2c_rw_input_cpp(I2C_XFER_T *xfer, int ops);
 void Chip_I2C_MasterCmdRead_cpp(I2C_ID_T id, uint8_t slaveAddr, uint8_t cmd, uint8_t *buff, int len);
 void Chip_I2C_MasterSend_cpp(I2C_ID_T id, uint8_t slaveAddr, const uint8_t *buff, uint8_t len);
 void Chip_I2C_MasterTransfer_cpp(I2C_ID_T id, I2C_XFER_T *xfer);
-void one_wire_dev_init(I2C_XFER_T& xf); // first run this in start code
+void one_wire_dev_init(I2C_XFER_T& xf,uint8_t dsad); // first run this in start code
 
 uint8_t one_wire_dev_status(I2C_XFER_T& xf); //run this when seems necessary
 void one_wire_reset(I2C_XFER_T& xf); //run this in loop external
@@ -101,9 +101,9 @@ void start_cov(I2C_XFER_T& xf);//run this in loop internal and first
 void read_scratch(I2C_XFER_T& xf);
 void read_data(I2C_XFER_T& xf);
 void read_temp(I2C_XFER_T& xf);
-bool exec_temp(I2C_XFER_T& xf,int& r); // use this third
+bool exec_temp(I2C_XFER_T& xf,int& r,uint8_t dsad); // use this third
 void one_wire_read(I2C_XFER_T& xf);
-void exec_scratch(I2C_XFER_T& xf);//run this second probably
+void exec_scratch(I2C_XFER_T& xf,uint8_t dsad);//run this second probably
 bool checkrx(void);
 void send_data(I2C_XFER_T& xf,const uint8_t data );
 void write_scratchblock(I2C_XFER_T& xf);

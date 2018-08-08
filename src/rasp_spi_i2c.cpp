@@ -54,7 +54,7 @@ void I2C0_IRQHandler(void)
 }
 }
 
-static xLIST list;
+//static xLIST list;
 
 
 
@@ -62,7 +62,7 @@ static xLIST list;
 bool input=false;
 bool output=true;
 int j;
-
+int a =0;
 static I2C_XFER_T xfer,xf;
 //static uint8_t tx_buff1[]={0x00,0x00,0x00,0x00};
 #if defined(SPI_MODE)
@@ -144,11 +144,12 @@ static void blink2(void *pvParameters)
 		if (xSemaphoreTake(mu,1000))
 		{
 			/* blinks led in cycle*/
-			if (!checkrx()){
+			if (checkrx()){a=1;}
+			if ((a==1)){
 				if (ledg && ledb){ledg=false;ledb=true;ledr=true;}else{if(ledr && ledb){ledb=false;ledr=true;ledg=true;}else{ledr=false;ledg=true;ledb=true;}}}
 			xSemaphoreGive(mu);
 		}
-		vTaskDelay(10*configTICK_RATE_HZ);
+		vTaskDelay(1*configTICK_RATE_HZ);
 	}
 }
 /* LED2 toggle thread */
@@ -187,16 +188,16 @@ static void bottonreadandrelay(void *pvParameters) {
 static void onewire_data(void *pvParameters)
 {
 	int i;
-
-	one_wire_dev_init(xf);
+	uint8_t addr1= DSADD;
+	one_wire_dev_init(xf,addr1);
 
 //	write_scratchblock(xf);
 	gpio_pin_port pinx(LPC_GPIO ,2,12,output,&mu);
 	pinx=false;
 	while (1)
 	{
-		exec_scratch(xf);
-		pinx=exec_temp(xf,i);
+		exec_scratch(xf,addr1);
+		pinx=exec_temp(xf,i,addr1);
 		vTaskDelay(configTICK_RATE_HZ/2);
 	}
 }
@@ -253,9 +254,9 @@ void setup()
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 			(xTaskHandle *) NULL);
 	/* UART output thread, simply counts seconds */
-	/*xTaskCreate(vUARTTask, (signed char *) "vTaskUart",
+	xTaskCreate(vUARTTask, (signed char *) "vTaskUart",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-			(xTaskHandle *) NULL);*/
+			(xTaskHandle *) NULL);
 
 }
 /*****************************************************************************

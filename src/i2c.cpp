@@ -89,8 +89,8 @@ static void i2c_client_events(I2C_ID_T id, I2C_EVENT_T event)
 	switch(event) {
 	case I2C_EVENT_DONE:
 		slave_xfr.rxBuff = slave_data_rx;
-
 		slave_xfr.rxSz = sizeof(slave_data_rx);
+
 		slave_xfr.txBuff = slave_data_tx;
 		slave_xfr.txSz = sizeof(slave_data_tx)+1;
 		break;
@@ -132,9 +132,9 @@ void Chip_I2C_MasterCmdRead_cpp(I2C_ID_T id, uint8_t slaveAddr, uint8_t cmd, uin
 void Chip_I2C_MasterSend_cpp(I2C_ID_T id, uint8_t slaveAddr, const uint8_t *buff, uint8_t len){ Chip_I2C_MasterSend(id, slaveAddr,buff, len);}
 void Chip_I2C_MasterTransfer_cpp(I2C_ID_T id, I2C_XFER_T *xfer){ Chip_I2C_MasterTransfer(id, xfer);}
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
-void one_wire_dev_init(I2C_XFER_T& xf)
+void one_wire_dev_init(I2C_XFER_T& xf,uint8_t dsad)
 {
-	xf.slaveAddr=DSADD;
+	xf.slaveAddr=dsad;
 	xf.txBuff=write_init_tx;
 	xf.txSz=sizeof(write_init_tx);
 	Chip_I2C_MasterTransfer_cpp(I2C0, &xf);
@@ -142,29 +142,25 @@ void one_wire_dev_init(I2C_XFER_T& xf)
 uint8_t one_wire_dev_status(I2C_XFER_T& xf)
 {
 	uint8_t i;
-	//gpio_pin_port pin1(LPC_GPIO ,0,2,output,&mu);
-	//gpio_pin_port pin2(LPC_GPIO ,0,3,output,&mu);
-	xf.slaveAddr=DSADD;
+
 	xf.txBuff=read_status_tx;
 	xf.rxBuff=&i;
 	xf.txSz=sizeof(read_status_tx);
 	xf.rxSz=1;
-	//Chip_I2C_MasterTransfer_cpp(I2C0, &xf);
+
 	Chip_I2C_MasterSend_cpp(I2C0, xf.slaveAddr,xf.txBuff, xf.txSz);
 	bool m=true;
 	while(m)
 	{
 		Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&i, 1);
 		m=0x01&i;
-		//if(m){pin1=true;}
+
 	}
 	return i;
 }
 void one_wire_reset(I2C_XFER_T& xf)
 {
-	xf.slaveAddr=DSADD;
-	/*xf.rxBuff=one_wire_reset_rx;
-	xf.rxSz=sizeof(one_wire_reset_rx);*/
+
 	Chip_I2C_MasterCmdRead_cpp( I2C0, xf.slaveAddr, ONEWIRE_RESET, NULL, 0);
 }
 void send_data(I2C_XFER_T& xf,const uint8_t data )
@@ -178,40 +174,32 @@ void send_data(I2C_XFER_T& xf,const uint8_t data )
 }
 void select_one_wire(I2C_XFER_T& xf)
 {
-	xf.slaveAddr=DSADD;
-	/*xf.txBuff=one_wire_select;
-	xf.txSz=sizeof(one_wire_select);
-	Chip_I2C_MasterSend_cpp(I2C0, xf.slaveAddr,xf.txBuff, xf.txSz);*/
 	send_data(xf,SKIP_ROM_COMMAND);
 }
 void start_cov(I2C_XFER_T& xf)
 {
-	xf.slaveAddr=DSADD;
 	send_data(xf,START_CONVESION);
-	/*xf.txBuff=start_conversion;
-	xf.txSz=sizeof(start_conversion);
-	Chip_I2C_MasterSend_cpp(I2C0, xf.slaveAddr,xf.txBuff, xf.txSz);*/
 }
 void read_data(I2C_XFER_T& xf)
 {
-	xf.slaveAddr=DSADD;
+
 	xf.txBuff=read_data_reg_tx;
 	xf.txSz=sizeof(read_data_reg_tx);
 	Chip_I2C_MasterSend_cpp(I2C0, xf.slaveAddr,xf.txBuff, xf.txSz);
 }
 void one_wire_read(I2C_XFER_T& xf)
 {
-	xf.slaveAddr=DSADD;
+
 	xf.rxBuff=one_wire_reset_rx;
 	xf.rxSz=sizeof(one_wire_reset_rx);
 	Chip_I2C_MasterCmdRead_cpp( I2C0, xf.slaveAddr, ONEWIRE_READ_BYTE,  &(xf.rxBuff[1]), 1);
-	//send_data(xf,ONEWIRE_READ_BYTE);
+
 }
 
 void write_scratch(I2C_XFER_T& xf)
 {
 	uint8_t th=43, tl=11,config=0x5F;
-	uint8_t buf[]={th,tl,config};
+
 	send_data(xf,0x4E);//write scratchpad
 	send_data(xf,th);
 	send_data(xf,tl);
@@ -221,67 +209,41 @@ void write_scratch(I2C_XFER_T& xf)
 
 void read_scratch(I2C_XFER_T& xf)
 {
-	xf.slaveAddr=DSADD;
+
 	send_data(xf,READ_SCRATCH_PAD);
-	/*xf.txBuff=read_scratch_pad;
-	xf.txSz=sizeof(read_scratch_pad);
-	Chip_I2C_MasterSend_cpp(I2C0, xf.slaveAddr,xf.txBuff, xf.txSz);*/
+
 }
 
-/*void read_temp(I2C_XFER_T& xf)
+
+void exec_scratch(I2C_XFER_T& xf,uint8_t dsad)
 {
-	int i;
-	uint8_t n,u[9];
+	xf.slaveAddr=dsad;
 	one_wire_reset(xf);
-	xf.slaveAddr=DSADD;
-	select_one_wire(xf);
-	for (i=0;i<9;i++)
-	{
-		one_wire_read(xf);
-		Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&n, 1);
-		slave_data_tx[i]=n;
-	}
-	xf.slaveAddr=DSADD;
-	xf.txBuff=read_temp_data_tx;
-	xf.txSz=sizeof(read_temp_data_tx);
-	xf.rxBuff=slave_data_tx;
-	xf.rxSz=sizeof(slave_data_tx);
-	Chip_I2C_MasterTransfer_cpp(I2C0, &xf);
-}*/
-void exec_scratch(I2C_XFER_T& xf)
-{
-	one_wire_reset(xf);
-	xf.slaveAddr=DSADD;
 	select_one_wire(xf);
 	start_cov(xf);
 	read_data(xf);
 	uint8_t i=0xFF;
-/*while(!(i==0x00))
-	{
-		one_wire_read(xf);
-		Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&i, 1);
-	}*/
+
 }
 
-void write_scratchblock(I2C_XFER_T& xf)
+void write_scratchblock(I2C_XFER_T& xf,uint8_t dsad)
 {
+	xf.slaveAddr=dsad;
 	one_wire_reset(xf);
-	xf.slaveAddr=DSADD;
 	select_one_wire(xf);
 	write_scratch(xf);
 }
-bool exec_temp(I2C_XFER_T& xf,int& r)
+bool exec_temp(I2C_XFER_T& xf,int& r,uint8_t  dsad)
 {
 	volatile int i;bool output=true;xSemaphoreHandle   mu=0;
 	bool pinx;
 	uint8_t n,u[9];
 	one_wire_reset(xf);
-	xf.slaveAddr=DSADD;
+	xf.slaveAddr=dsad;
 	pinx=false;
 	select_one_wire(xf);
 	read_scratch(xf);
-	//one_wire_read(xf);
-	//read_data(xf);
+
 	for (i=0;i<9;i++)
 	{
 		one_wire_read(xf);
@@ -301,5 +263,5 @@ return pinx;
 
 bool checkrx(void)
 {
-	return ((slave_data_rx[1]==0x55)|(slave_data_rx[9]==0x55)|(slave_data_rx[10]==0x55)|(slave_data_rx[11]==0x55)|(slave_data_rx[12]==0x55)|(slave_data_rx[4]==0x55)|(slave_data_rx[13]==0x55)|(slave_data_rx[6]==0x55)|(slave_data_rx[7]==0x55)|(slave_data_rx[8]==0x55));
+	return ((slave_data_rx[0]==0x55)|(slave_data_rx[9]==0x55)|(slave_data_rx[10]==0x55)|(slave_data_rx[11]==0x55)|(slave_data_rx[12]==0x55)|(slave_data_rx[4]==0x55)|(slave_data_rx[13]==0x55)|(slave_data_rx[6]==0x55)|(slave_data_rx[7]==0x55)|(slave_data_rx[8]==0x55));
 }
