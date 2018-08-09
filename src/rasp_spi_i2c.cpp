@@ -144,7 +144,7 @@ static void blink2(void *pvParameters)
 		if (xSemaphoreTake(mu,1000))
 		{
 			/* blinks led in cycle*/
-			if (checkrx()){a=1;}
+			if (checkrx44()){a=1;}
 			if ((a==1)){
 				if (ledg && ledb){ledg=false;ledb=true;ledr=true;}else{if(ledr && ledb){ledb=false;ledr=true;ledg=true;}else{ledr=false;ledg=true;ledb=true;}}}
 			xSemaphoreGive(mu);
