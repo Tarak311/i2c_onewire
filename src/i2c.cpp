@@ -265,3 +265,11 @@ bool checkrx(void)
 {
 	return ((slave_data_rx[0]==0x55)|(slave_data_rx[9]==0x55)|(slave_data_rx[10]==0x55)|(slave_data_rx[11]==0x55)|(slave_data_rx[12]==0x55)|(slave_data_rx[4]==0x55)|(slave_data_rx[13]==0x55)|(slave_data_rx[6]==0x55)|(slave_data_rx[7]==0x55)|(slave_data_rx[8]==0x55));
 }
+bool checkrx44(void)
+{
+	return ((slave_data_rx[0]==0x44)|(slave_data_rx[9]==0x44)|(slave_data_rx[10]==0x44)|(slave_data_rx[11]==0x44)|(slave_data_rx[12]==0x44)|(slave_data_rx[4]==0x44)|(slave_data_rx[13]==0x44)|(slave_data_rx[6]==0x44)|(slave_data_rx[7]==0x44)|(slave_data_rx[8]==0x44));
+}
+bool checkrx77(void)
+{
+	return ((slave_data_rx[0]==0x77)|(slave_data_rx[9]==0x77)|(slave_data_rx[10]==0x77)|(slave_data_rx[11]==0x77)|(slave_data_rx[12]==0x77)|(slave_data_rx[4]==0x77)|(slave_data_rx[13]==0x77)|(slave_data_rx[6]==0x77)|(slave_data_rx[7]==0x77)|(slave_data_rx[8]==0x77));
+}

@@ -149,7 +149,7 @@ static void blink2(void *pvParameters)
 				if (ledg && ledb){ledg=false;ledb=true;ledr=true;}else{if(ledr && ledb){ledb=false;ledr=true;ledg=true;}else{ledr=false;ledg=true;ledb=true;}}}
 			xSemaphoreGive(mu);
 		}
-		vTaskDelay(1*configTICK_RATE_HZ);
+		vTaskDelay(configTICK_RATE_HZ/2);
 	}
 }
 /* LED2 toggle thread */
@@ -188,14 +188,17 @@ static void bottonreadandrelay(void *pvParameters) {
 static void onewire_data(void *pvParameters)
 {
 	int i;
-	uint8_t addr1= DSADD;
+	uint8_t addr1= 0x1B;
 	one_wire_dev_init(xf,addr1);
 
 //	write_scratchblock(xf);
 	gpio_pin_port pinx(LPC_GPIO ,2,12,output,&mu);
+	gpio_pin_port piny(LPC_GPIO ,2,11,output,&mu);
 	pinx=false;
 	while (1)
 	{
+		if (checkrx()){a=1;}
+			 if (a==1){piny=true;}
 		exec_scratch(xf,addr1);
 		pinx=exec_temp(xf,i,addr1);
 		vTaskDelay(configTICK_RATE_HZ/2);

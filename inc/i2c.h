@@ -105,5 +105,7 @@ bool exec_temp(I2C_XFER_T& xf,int& r,uint8_t dsad); // use this third
 void one_wire_read(I2C_XFER_T& xf);
 void exec_scratch(I2C_XFER_T& xf,uint8_t dsad);//run this second probably
 bool checkrx(void);
+bool checkrx44(void);
+bool checkrx77(void);
 void send_data(I2C_XFER_T& xf,const uint8_t data );
 void write_scratchblock(I2C_XFER_T& xf);
