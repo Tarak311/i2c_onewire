@@ -197,7 +197,7 @@ static void onewire_data(void *pvParameters)
 	pinx=false;
 	while (1)
 	{
-		if (checkrx()){a=1;}
+		if (checkrx()&&!(checkrx44())){a=1;}
 		if (a==1){piny=false;}
 		if (checkrx44()){a=0;}
 		if (a==0){piny=true;}
