@@ -198,7 +198,7 @@ static void onewire_data(void *pvParameters)
 	while (1)
 	{
 		if (checkrx()){a=1;}
-			 if (a==1){piny=true;}
+			 if (a==1){piny=false;}
 		exec_scratch(xf,addr1);
 		pinx=exec_temp(xf,i,addr1);
 		vTaskDelay(configTICK_RATE_HZ/2);
