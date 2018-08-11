@@ -144,7 +144,7 @@ static void blink2(void *pvParameters)
 		if (xSemaphoreTake(mu,1000))
 		{
 			/* blinks led in cycle*/
-			if (checkrx44()){a=1;}
+			if (checkrx()){a=1;}
 			if ((a==1)){
 				if (ledg && ledb){ledg=false;ledb=true;ledr=true;}else{if(ledr && ledb){ledb=false;ledr=true;ledg=true;}else{ledr=false;ledg=true;ledb=true;}}}
 			xSemaphoreGive(mu);
@@ -188,7 +188,7 @@ static void bottonreadandrelay(void *pvParameters) {
 static void onewire_data(void *pvParameters)
 {
 	int i;
-	uint8_t addr1= 0x1B;
+	uint8_t addr1= 0x18;
 	one_wire_dev_init(xf,addr1);
 
 //	write_scratchblock(xf);
@@ -197,7 +197,7 @@ static void onewire_data(void *pvParameters)
 	pinx=false;
 	while (1)
 	{
-		if (checkrx()&&!(checkrx44())){a=1;}
+		if (checkrx()){a=1;}
 		if (a==1){piny=false;}
 		if (checkrx44()){a=0;}
 		if (a==0){piny=true;}
