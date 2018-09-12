@@ -23,7 +23,7 @@ extern "C" {
 
 static void i2c_block_init(I2C_ID_T id, int speed);
 static void i2c_set_mode(I2C_ID_T id, int polling);
-static void i2c_client_init(I2C_ID_T id);
+static void i2c_client_init(I2C_ID_T id,uint8_t address);
 static void i2c_client_events(I2C_ID_T id, I2C_EVENT_T event);
 /*-----------------------------------------INT-------------------------------------------------------------------------*/
 static void i2c_state_handling(I2C_ID_T id);
@@ -75,10 +75,10 @@ static void i2c_set_mode(I2C_ID_T id, int polling)
 
 
 /* Simulate a client slave device*/
-static  void i2c_client_init(I2C_ID_T id)
+static  void i2c_client_init(I2C_ID_T id,uint8_t address=I2C_SLAVE_CLIENT_ADDR)
 {
 
-	slave_xfr.slaveAddr = (I2C_SLAVE_CLIENT_ADDR << 1);
+	slave_xfr.slaveAddr = (address << 1);
 	i2c_client_events(id, I2C_EVENT_DONE);
 	Chip_I2C_SlaveSetup(id, I2C_SLAVE_0, &slave_xfr, i2c_client_events, 0);
 	/* Setup SysTick timer to get the button status updated at regular intervals*/
@@ -124,7 +124,7 @@ static void i2c_state_handling(I2C_ID_T id)
 
 void i2c_block_init_cpp(I2C_ID_T id, int speed){i2c_block_init(id,speed);}
 void i2c_set_mode_cpp(I2C_ID_T id, int polling){i2c_set_mode(id,polling);}
-void i2c_client_init_cpp(I2C_ID_T id){i2c_client_init(id);}
+void i2c_client_init_cpp(I2C_ID_T id,uint8_t addr=I2C_SLAVE_CLIENT_ADDR){i2c_client_init(id,addr);}
 void i2c_client_events_cpp(I2C_ID_T id, I2C_EVENT_T event){i2c_client_events(id,event);}
 void i2c_state_handling_cpp(I2C_ID_T id){i2c_state_handling(id);}
 void i2c_rw_input_cpp(I2C_XFER_T *xfer, int ops){ i2c_rw_input(xfer,ops);}
@@ -233,43 +233,103 @@ void write_scratchblock(I2C_XFER_T& xf,uint8_t dsad)
 	select_one_wire(xf);
 	write_scratch(xf);
 }
-bool exec_temp(I2C_XFER_T& xf,int& r,uint8_t  dsad)
+uint8_t exec_temp(I2C_XFER_T& xf,int& r,uint8_t  dsad)
 {
 	volatile int i;bool output=true;xSemaphoreHandle   mu=0;
-	bool pinx;
+	uint8_t pinx=0x00;
 	uint8_t n,u[9];
 	one_wire_reset(xf);
 	xf.slaveAddr=dsad;
-	pinx=false;
+	pinx=true;
 	select_one_wire(xf);
 	read_scratch(xf);
-
-	for (i=0;i<9;i++)
+	if (dsad==0x1B)
 	{
-		one_wire_read(xf);
-		read_data(xf);
-		Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&n, 1);
-		slave_data_tx[i]=n;
+		for (i=0;i<9;i++)
+		{
+			one_wire_read(xf);
+			read_data(xf);
+			Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&n, 1);
+			slave_data_tx[i]=n;
 
+		}
+	}
+	else
+	{
+		for (i=9;i<18;i++)
+		{
+			one_wire_read(xf);
+			read_data(xf);
+			Chip_I2C_MasterRead(I2C0,xf.slaveAddr,&n, 1);
+			slave_data_tx[i]=n;
+
+		}
 	}
 	uint16_t slave_data16=slave_data_tx[1]<<8;
 	slave_data16=slave_data16|slave_data_tx[0];
-if (slave_data_tx[0]>0xD8){
-	pinx=true;
-	int i;
-}
-return pinx;
+	if (slave_data_tx[0]>0xa4){
+		pinx=0x97;
+
+	}
+	if (slave_data_tx[0]<0x48){
+			pinx=0x52;
+			int i;
+		}
+	return slave_data_tx[0];
 }
 
-bool checkrx(void)
+bool checkrx54(void)
+{
+	return ((slave_data_rx[0]==0x54)|(slave_data_rx[9]==0x54)|(slave_data_rx[10]==0x54)|(slave_data_rx[11]==0x54)|(slave_data_rx[12]==0x54)|(slave_data_rx[4]==0x54)|(slave_data_rx[13]==0x54)|(slave_data_rx[6]==0x54)|(slave_data_rx[7]==0x54)|(slave_data_rx[8]==0x54));
+}
+bool checkrx55(void)
 {
 	return ((slave_data_rx[0]==0x55)|(slave_data_rx[9]==0x55)|(slave_data_rx[10]==0x55)|(slave_data_rx[11]==0x55)|(slave_data_rx[12]==0x55)|(slave_data_rx[4]==0x55)|(slave_data_rx[13]==0x55)|(slave_data_rx[6]==0x55)|(slave_data_rx[7]==0x55)|(slave_data_rx[8]==0x55));
 }
+
 bool checkrx44(void)
 {
 	return ((slave_data_rx[0]==0x44)|(slave_data_rx[9]==0x44)|(slave_data_rx[10]==0x44)|(slave_data_rx[11]==0x44)|(slave_data_rx[12]==0x44)|(slave_data_rx[4]==0x44)|(slave_data_rx[13]==0x44)|(slave_data_rx[6]==0x44)|(slave_data_rx[7]==0x44)|(slave_data_rx[8]==0x44));
+}
+bool checkrx45(void)
+{
+	return ((slave_data_rx[0]==0x45)|(slave_data_rx[9]==0x77)|(slave_data_rx[10]==0x77)|(slave_data_rx[11]==0x77)|(slave_data_rx[12]==0x77)|(slave_data_rx[4]==0x77)|(slave_data_rx[13]==0x77)|(slave_data_rx[6]==0x77)|(slave_data_rx[7]==0x77)|(slave_data_rx[8]==0x77));
 }
 bool checkrx77(void)
 {
 	return ((slave_data_rx[0]==0x77)|(slave_data_rx[9]==0x77)|(slave_data_rx[10]==0x77)|(slave_data_rx[11]==0x77)|(slave_data_rx[12]==0x77)|(slave_data_rx[4]==0x77)|(slave_data_rx[13]==0x77)|(slave_data_rx[6]==0x77)|(slave_data_rx[7]==0x77)|(slave_data_rx[8]==0x77));
 }
+bool checkrx88(void)
+{
+	return ((slave_data_rx[0]==0x88)|(slave_data_rx[9]==0x88)|(slave_data_rx[10]==0x88)|(slave_data_rx[11]==0x88)|(slave_data_rx[12]==0x88)|(slave_data_rx[4]==0x88)|(slave_data_rx[13]==0x88)|(slave_data_rx[6]==0x88)|(slave_data_rx[7]==0x88)|(slave_data_rx[8]==0x88));
+}
+
+uint8_t checkrx(void)
+{
+if(checkrx54())
+{
+	return 0x54;
+}
+else if(checkrx55())
+{
+	return 0x55;
+}
+else if(checkrx44())
+{
+	return 0x44;
+}
+else if(checkrx45())
+{
+	return 0x45;
+}
+else if(checkrx77())
+{
+	return 0x77;
+}
+else if(checkrx88())
+{
+	return 0x88;
+}
+return 0x00;
+}
+

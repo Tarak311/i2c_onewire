@@ -69,7 +69,7 @@ static I2C_XFER_T slave_xfr;
 //====================ALL THIS MAKES OUR PROGRAM WORKS==================================================================//
 
 /* Data area for slave operations */
-static uint8_t slave_data_tx[]={0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; // THIS IS RX OF MASTER SO ADXL/DS2=>MASTER=>RX=>TX OF SLAVE=>HOST
+static uint8_t slave_data_tx[]={0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; // THIS IS RX OF MASTER SO ADXL/DS2=>MASTER=>RX=>TX OF SLAVE=>HOST
 static uint8_t slave_data_rx[]={0x01,0xF0,0x00,0x00,0xB0,0xA0,0x00,0xB0,0xA0};
 static uint8_t slave_data_tx1[]={0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
 static uint8_t tx_buff1[]={0x2d,0x08};// CONTAINS SETUP DATA
@@ -85,7 +85,7 @@ struct i2c_data {
 };
 void i2c_block_init_cpp(I2C_ID_T id, int speed);
 void i2c_set_mode_cpp(I2C_ID_T id, int polling);
-void i2c_client_init_cpp(I2C_ID_T id);
+void i2c_client_init_cpp(I2C_ID_T id,uint8_t addr);
 void i2c_client_events_cpp(I2C_ID_T id, I2C_EVENT_T event);
 void i2c_state_handling_cpp(I2C_ID_T id);
 void i2c_rw_input_cpp(I2C_XFER_T *xfer, int ops);
@@ -101,11 +101,15 @@ void start_cov(I2C_XFER_T& xf);//run this in loop internal and first
 void read_scratch(I2C_XFER_T& xf);
 void read_data(I2C_XFER_T& xf);
 void read_temp(I2C_XFER_T& xf);
-bool exec_temp(I2C_XFER_T& xf,int& r,uint8_t dsad); // use this third
+uint8_t exec_temp(I2C_XFER_T& xf,int& r,uint8_t dsad); // use this third
 void one_wire_read(I2C_XFER_T& xf);
 void exec_scratch(I2C_XFER_T& xf,uint8_t dsad);//run this second probably
-bool checkrx(void);
+uint8_t checkrx(void);
+bool checkrx54(void);
+bool checkrx55(void);
 bool checkrx44(void);
+bool checkrx45(void);
 bool checkrx77(void);
+bool checkrx88(void);
 void send_data(I2C_XFER_T& xf,const uint8_t data );
 void write_scratchblock(I2C_XFER_T& xf);

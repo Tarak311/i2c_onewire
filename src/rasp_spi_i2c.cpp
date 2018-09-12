@@ -63,7 +63,7 @@ bool input=false;
 bool output=true;
 int j;
 int a =0;
-static I2C_XFER_T xfer,xf;
+static I2C_XFER_T xfer,xf,xf2;
 //static uint8_t tx_buff1[]={0x00,0x00,0x00,0x00};
 #if defined(SPI_MODE)
 static SPI_DATA_SETUP_T spi_main_xf;
@@ -95,7 +95,7 @@ static void i2c_setup(I2C_XFER_T& xfer)
 {
 	i2c_block_init_cpp(I2C0, SPEED_100KHZ);
 	i2c_block_init_cpp(I2C1, SPEED_100KHZ);
-	i2c_client_init_cpp(I2C0);
+	i2c_client_init_cpp(I2C0,0x5D);
 	i2c_rw_input_cpp(&xfer, 1);
 }
 #endif
@@ -144,7 +144,7 @@ static void blink2(void *pvParameters)
 		if (xSemaphoreTake(mu,1000))
 		{
 			/* blinks led in cycle*/
-			if (checkrx()){a=1;}
+			if (checkrx55()){a=1;}
 			if ((a==1)){
 				if (ledg && ledb){ledg=false;ledb=true;ledr=true;}else{if(ledr && ledb){ledb=false;ledr=true;ledg=true;}else{ledr=false;ledg=true;ledb=true;}}}
 			xSemaphoreGive(mu);
@@ -187,22 +187,57 @@ static void bottonreadandrelay(void *pvParameters) {
 }
 static void onewire_data(void *pvParameters)
 {
-	int i;
-	uint8_t addr1= 0x18;
+	bool i=false;
+	uint8_t b;
+	int f;
+	uint8_t addr1= 0x1B;
+	uint8_t addr2= 0x18;
 	one_wire_dev_init(xf,addr1);
-
-//	write_scratchblock(xf);
+	one_wire_dev_init(xf2,addr2);
+	uint8_t temperature=0x90;
+	uint8_t temperature_low=0x56;
+	//	write_scratchblock(xf);
 	gpio_pin_port pinx(LPC_GPIO ,2,12,output,&mu);
 	gpio_pin_port piny(LPC_GPIO ,2,11,output,&mu);
 	pinx=false;
-	while (1)
-	{
-		if (checkrx()){a=1;}
-		if (a==1){piny=false;}
-		if (checkrx44()){a=0;}
-		if (a==0){piny=true;}
+	piny=false;
+
+	while (1){
 		exec_scratch(xf,addr1);
-		pinx=exec_temp(xf,i,addr1);
+		exec_scratch(xf2,addr2);
+		b=exec_temp(xf,f,addr1);
+		exec_temp(xf2,f,addr2);
+		uint8_t temp =checkrx();
+		switch(temp)
+		{
+		case 0x44:
+			if(i){pinx=false;}
+			break;
+		case 0x45:
+			if(i){pinx=true;}
+			break;
+		case 0x54:
+			if(i){piny=false;}
+			break;
+		case 0x55:
+			if(i){piny=true;}
+			break;
+		case 0x77:
+			i=true;
+			break;
+		case 0x88:
+			i=false;
+
+		default:
+
+			if((temp&0xC0)==0xC0){temp=(0x3F&temp);temperature+=temp;}//The number should not be greater than 112 which is 0x70.
+			if(!i)
+			{
+				if(b>=temperature) {piny=true;}else {piny=false;}
+				if(b<=temperature_low) {pinx=true;}else {pinx=false;}
+			}
+			break;
+		}
 		vTaskDelay(configTICK_RATE_HZ/2);
 	}
 }
@@ -246,7 +281,7 @@ void setup()
 	xTaskCreate(blink2, (signed char *) "blink2",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 			(xTaskHandle *) NULL);
-		xTaskCreate(bottonreadandrelay, (signed char *) "bottonreadandrelay",
+	xTaskCreate(bottonreadandrelay, (signed char *) "bottonreadandrelay",
 			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 			(xTaskHandle *) NULL);
 	xTaskCreate(onewire_data,(signed char *) "TX/RX function",
