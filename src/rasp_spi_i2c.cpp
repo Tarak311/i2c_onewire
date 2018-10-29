@@ -17,8 +17,7 @@
 #endif
 #endif
 
-
-
+#include <metal/unit.hpp>
 #include "portmacro.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -327,11 +326,14 @@ int main()
 	//Chip_I2C_MasterCmdRead_cpp( I2C0, xfer.slaveAddr, 0x00,  xfer.rxBuff, xfer.rxSz); //TODO:move this line to somewhere in task of FREERTOS
 	setup();
 	//uint8_t buff[]={0x2d,0x08};
-
+	int i= 31;
+	i++;
+	METAL_ASSERT_EQUAL(i,31);
+	return METAL_REPORT();
 	Chip_I2C_MasterSend_cpp(I2C0, xfer.slaveAddr,xfer.txBuff, xfer.txSz);
 	Chip_I2C_MasterCmdRead_cpp( I2C0, xfer.slaveAddr, 0x00,  &(xfer.rxBuff[1]), 1);
 	Chip_I2C_MasterCmdRead_cpp( I2C0, xfer.slaveAddr, 0x2D,  &(xfer.rxBuff[2]), 1);
-
+	//void metal_dbg_setup_bps(std::vector<std::unique_ptr<metal::debug::break_point>> & bps);
 	vTaskStartScheduler();
 	//while (1) {if (spi_xfer_completed) { spi_xfer_completed=0;appSPIRun();}}
 
